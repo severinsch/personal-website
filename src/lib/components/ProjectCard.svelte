@@ -9,7 +9,7 @@
 >
 	<div class="mb-3 flex items-start justify-between gap-4">
 		<h3 class="font-heading text-lg font-semibold text-espresso">{project.title}</h3>
-		<span class="flex-shrink-0 text-sm text-clay">{project.year}</span>
+		<span class="shrink-0 text-sm text-clay">{project.year}</span>
 	</div>
 
 	<p class="mb-4 text-sm leading-relaxed text-walnut/80">{project.description}</p>

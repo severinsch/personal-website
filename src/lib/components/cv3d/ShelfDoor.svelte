@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { T } from '@threlte/core';
 	import { Text } from '@threlte/extras';
-	import { spring } from 'svelte/motion';
+	import { Spring } from 'svelte/motion';
 	import type { ShelfEntry } from '$lib/content/cv3d-grid';
 	import { CONTENT_COL_W, DIVIDER_X, RIGHT_X, DEPTH } from '$lib/content/cv3d-grid';
 
@@ -15,8 +15,8 @@
 		height: number;
 	} = $props();
 
-	const rotX = spring(0, { stiffness: 0.08, damping: 0.6 });
-	const textOpacity = spring(0, { stiffness: 0.05, damping: 0.8 });
+	const rotX = new Spring(0, { stiffness: 0.08, damping: 0.6 });
+	const textOpacity = new Spring(0, { stiffness: 0.05, damping: 0.8 });
 
 	let open = $state(false);
 
@@ -51,9 +51,7 @@
 			: (entry.subtitle ?? entry.location ?? '')
 	);
 
-	const bulletsStartY = $derived(
-		contentTop - LINE_TITLE - (subtitleText ? LINE_SUB + 0.08 : 0.05)
-	);
+	const bulletsStartY = $derived(contentTop - LINE_TITLE - (subtitleText ? LINE_SUB + 0.08 : 0.05));
 
 	// Single text block for all bullets joined with newlines — Troika handles all wrapping
 	// and line spacing internally, so bullet positions are always exact.
@@ -75,7 +73,7 @@
 </script>
 
 <!-- Door hinge group — bottom edge pivot, rotates around X axis (drops forward) -->
-<T.Group position={[contentCenterX, hingeY, DEPTH + 0.02]} rotation.x={$rotX}>
+<T.Group position={[contentCenterX, hingeY, DEPTH + 0.02]} rotation.x={rotX.current}>
 	<!-- Door panel -->
 	<T.Mesh
 		position={[0, doorH / 2, 0]}
@@ -117,7 +115,7 @@
 	anchorX="left"
 	anchorY="top"
 	maxWidth={contentW}
-	fillOpacity={$textOpacity}
+	fillOpacity={textOpacity.current}
 />
 
 {#if subtitleText}
@@ -130,7 +128,7 @@
 		anchorX="left"
 		anchorY="top"
 		maxWidth={contentW}
-		fillOpacity={$textOpacity}
+		fillOpacity={textOpacity.current}
 	/>
 {/if}
 
@@ -145,6 +143,6 @@
 		maxWidth={contentW}
 		lineHeight={1.4}
 		colorRanges={bulletsColorRanges}
-		fillOpacity={$textOpacity}
+		fillOpacity={textOpacity.current}
 	/>
 {/if}

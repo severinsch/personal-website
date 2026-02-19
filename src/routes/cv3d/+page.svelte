@@ -19,7 +19,7 @@
 <svelte:window onscroll={() => (scrollY = window.scrollY)} bind:innerHeight />
 
 <div
-	class="-mb-12 -mt-12"
+	class="-mt-12 -mb-12"
 	style="height: {totalScrollPx}px; margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw);"
 >
 	<div class="sticky top-0 h-screen">
@@ -28,7 +28,7 @@
 		</Canvas>
 
 		<!-- Overlay UI -->
-		<div class="pointer-events-none absolute left-6 top-4">
+		<div class="pointer-events-none absolute top-4 left-6">
 			<h1 class="font-heading text-2xl font-bold text-espresso">Curriculum Vitae</h1>
 			<p class="mt-1 text-sm text-clay">Scroll to navigate &middot; Click doors to reveal</p>
 		</div>

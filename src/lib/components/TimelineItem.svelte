@@ -35,7 +35,7 @@
 			<ul class="mt-3 space-y-1.5">
 				{#each bullets as bullet}
 					<li class="flex gap-2 text-sm text-walnut/80">
-						<span class="mt-1.5 block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-mustard/50"></span>
+						<span class="mt-1.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-mustard/50"></span>
 						{bullet}
 					</li>
 				{/each}
