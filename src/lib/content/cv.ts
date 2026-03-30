@@ -23,9 +23,17 @@ export const education: Education[] = [
 
 export const experience: Experience[] = [
 	{
+		title: 'Working Student Software Engineering',
+		company: 'revel8 GmbH',
+		period: 'Apr. 2026 – Present',
+		location: 'Munich',
+		bullets: [
+		]
+	},
+	{
 		title: 'Junior Software Engineer',
 		company: 'ICONPARC GmbH',
-		period: 'Sep. 2025 – Present',
+		period: 'Sep. 2025 – Mar. 2026',
 		location: 'Munich',
 		bullets: [
 			'Developed reliable B2B applications using a proprietary DSL and Java',
