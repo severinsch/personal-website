@@ -1,11 +1,12 @@
 <script lang="ts">
 	import type { Project } from '$lib/types';
 
-	let { project }: { project: Project } = $props();
+	let { project, showDetails }: { project: Project, showDetails: boolean } = $props();
+
 </script>
 
 <article
-	class="rounded-lg border border-walnut/5 bg-linen p-6 shadow-sm transition-shadow duration-200 hover:shadow-md"
+	class="rounded-lg border border-walnut/10 bg-linen p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
 >
 	<div class="mb-3 flex items-start justify-between gap-4">
 		<h3 class="font-heading text-lg font-semibold text-espresso">{project.title}</h3>
@@ -13,6 +14,17 @@
 	</div>
 
 	<p class="mb-4 text-sm leading-relaxed text-walnut/80">{project.description}</p>
+
+	{#if showDetails && project.bullets && project.bullets.length > 0}
+		<ul class="mb-4 space-y-1.5">
+			{#each project.bullets as bullet}
+				<li class="flex gap-2 text-sm text-walnut/70">
+					<span class="mt-1.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-mustard/40"></span>
+					{bullet}
+				</li>
+			{/each}
+		</ul>
+	{/if}
 
 	<div class="flex flex-wrap gap-2">
 		{#each project.tech as tag}

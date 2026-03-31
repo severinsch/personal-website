@@ -127,6 +127,33 @@ pre {
 	border-radius: 0.5rem;
 }
 
+/* Subtle grain texture overlay — adds premium "paper" feel */
+body::after {
+	content: '';
+	position: fixed;
+	inset: 0;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)'/%3E%3C/svg%3E");
+	opacity: 0.028;
+	pointer-events: none;
+	z-index: 9999;
+}
+
+/* Page entry animation */
+@keyframes fadeUp {
+	from {
+		opacity: 0;
+		transform: translateY(12px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+main {
+	animation: fadeUp 0.35s ease-out both;
+}
+
 /* Dark mode — override Tailwind v4 color tokens */
 html.dark {
 	--color-cream: #1a1613;

@@ -16,7 +16,9 @@
 
 <div class="relative pl-8">
 	<!-- Timeline dot -->
-	<div class="absolute top-1.5 left-0 h-3 w-3 rounded-full border-2 border-mustard bg-cream"></div>
+	<div
+		class="absolute top-2 left-0 h-3 w-3 rounded-full border-2 border-mustard bg-cream ring-4 ring-cream"
+	></div>
 
 	<div class="pb-8">
 		<div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
