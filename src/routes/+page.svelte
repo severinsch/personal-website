@@ -26,14 +26,14 @@
 		<!-- Eyebrow label -->
 		<div class="mb-5 flex items-center gap-3">
 			<div class="h-px w-6 bg-mustard"></div>
-			<span class="text-xs font-semibold uppercase tracking-[0.18em] text-mustard">
+			<span class="text-xs font-semibold tracking-[0.18em] text-mustard uppercase">
 				Software Engineer & CS Student
 			</span>
 		</div>
 
 		<!-- Display name -->
 		<h1
-			class="mb-7 font-heading text-6xl font-black leading-none tracking-tight text-espresso sm:text-8xl"
+			class="mb-7 font-heading text-6xl leading-none font-black tracking-tight text-espresso sm:text-8xl"
 		>
 			Severin<br />Schmidmeier
 		</h1>
@@ -80,7 +80,7 @@
 	</div>
 	<div class="grid gap-6">
 		{#each featured as project}
-			<ProjectCard project={project} showDetails={false} />
+			<ProjectCard {project} showDetails={false} />
 		{/each}
 	</div>
 	<div class="mt-8 text-center">
@@ -102,24 +102,23 @@
 	</div>
 	<ul class="space-y-3">
 		<li class="flex items-start gap-3 text-sm text-walnut/80">
-			<span class="mt-1.5 block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-mustard/60"></span>
+			<span class="mt-1.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-mustard/60"></span>
 			<span
 				>Finishing my M.Sc. in Informatics at the
 				<span class="font-medium text-walnut">Technical University of Munich</span></span
 			>
 		</li>
 		<li class="flex items-start gap-3 text-sm text-walnut/80">
-			<span class="mt-1.5 block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-mustard/60"></span>
+			<span class="mt-1.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-mustard/60"></span>
 			<span
-				>Working as a software engineering student at
+				>Working as a software engineering working student at
 				<span class="font-medium text-walnut">revel8 GmbH</span> in Munich</span
 			>
 		</li>
 		<li class="flex items-start gap-3 text-sm text-walnut/80">
-			<span class="mt-1.5 block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-mustard/60"></span>
+			<span class="mt-1.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-mustard/60"></span>
 			<span
-				>Leading the <span class="font-medium text-walnut">DPSG Langenbach</span> scout group as
-				chairman</span
+				>Leading the <span class="font-medium text-walnut">DPSG Langenbach</span> scout group as chairman</span
 			>
 		</li>
 	</ul>

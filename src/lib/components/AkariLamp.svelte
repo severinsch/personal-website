@@ -109,10 +109,8 @@
 	/* ── Dark mode / lit state ─────────────────────────────────── */
 
 	.lit svg {
-		filter:
-			drop-shadow(0 0 12px rgba(255, 214, 133, 0.45))
-			drop-shadow(0 0 35px rgba(255, 205, 115, 0.35))
-			drop-shadow(0 0 70px rgba(255, 190, 85, 0.2))
+		filter: drop-shadow(0 0 12px rgba(255, 214, 133, 0.45))
+			drop-shadow(0 0 35px rgba(255, 205, 115, 0.35)) drop-shadow(0 0 70px rgba(255, 190, 85, 0.2))
 			drop-shadow(0 0 110px rgba(255, 175, 65, 0.1));
 	}
 

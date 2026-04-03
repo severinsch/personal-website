@@ -38,7 +38,10 @@
 
 <nav class="border-b border-walnut/10 bg-cream/80 backdrop-blur-sm">
 	<div class="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
-		<a href="/" class="flex items-center gap-2.5 font-heading text-xl font-bold tracking-tight text-espresso">
+		<a
+			href="/"
+			class="flex items-center gap-2.5 font-heading text-xl font-bold tracking-tight text-espresso"
+		>
 			Severin Schmidmeier
 		</a>
 

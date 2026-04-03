@@ -17,7 +17,7 @@
 }
 
 html {
-	font-family: var(--font-body);
+	font-family: var(--font-body), sans-serif;
 	color: var(--color-walnut);
 	background-color: var(--color-cream);
 }
@@ -28,13 +28,13 @@ h3,
 h4,
 h5,
 h6 {
-	font-family: var(--font-heading);
+	font-family: var(--font-heading), sans-serif;
 	color: var(--color-espresso);
 }
 
 code,
 pre {
-	font-family: var(--font-mono);
+	font-family: var(--font-mono), monospace;
 }
 
 /* Blog prose styles */

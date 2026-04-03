@@ -1,8 +1,7 @@
 <script lang="ts">
 	import type { Project } from '$lib/types';
 
-	let { project, showDetails }: { project: Project, showDetails: boolean } = $props();
-
+	let { project, showDetails }: { project: Project; showDetails: boolean } = $props();
 </script>
 
 <article

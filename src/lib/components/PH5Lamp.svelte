@@ -137,8 +137,7 @@
 
 	/* PH5 projects mostly downward, so bias glow slightly that way */
 	.lit .ph5-lamp-body {
-		filter:
-			drop-shadow(0 0 12px rgba(255, 214, 133, 0.4))
+		filter: drop-shadow(0 0 12px rgba(255, 214, 133, 0.4))
 			drop-shadow(0 22px 38px rgba(255, 200, 110, 0.32))
 			drop-shadow(0 0 70px rgba(255, 185, 80, 0.18))
 			drop-shadow(0 35px 110px rgba(255, 175, 65, 0.1));

@@ -27,8 +27,7 @@ export const experience: Experience[] = [
 		company: 'revel8 GmbH',
 		period: 'Apr. 2026 – Present',
 		location: 'Munich',
-		bullets: [
-		]
+		bullets: []
 	},
 	{
 		title: 'Junior Software Engineer',
