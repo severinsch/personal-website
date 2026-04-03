@@ -13,9 +13,20 @@
 	let dark = $state(false);
 
 	$effect(() => {
-		if (browser) {
+		if (!browser) return;
+
+		dark = document.documentElement.classList.contains('dark');
+
+		const observer = new MutationObserver(() => {
 			dark = document.documentElement.classList.contains('dark');
-		}
+		});
+
+		observer.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ['class']
+		});
+
+		return () => observer.disconnect();
 	});
 
 	function toggleTheme() {

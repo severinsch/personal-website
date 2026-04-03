@@ -2,6 +2,8 @@
 	import './layout.css';
 	import Nav from '$lib/components/Nav.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import AkariLamp from '$lib/components/AkariLamp.svelte';
+	import PH5Lamp from '$lib/components/PH5Lamp.svelte';
 
 	let { children } = $props();
 </script>
@@ -13,3 +15,6 @@
 	</main>
 	<Footer />
 </div>
+
+<PH5Lamp />
+<AkariLamp />
