@@ -70,9 +70,17 @@
 		position: fixed;
 		bottom: 0;
 		right: 2rem;
-		width: clamp(100px, 10vw, 200px);
+		width: clamp(80px, 8vw, 150px);
 		cursor: pointer;
 		z-index: 10;
+		transition: opacity 0.4s ease;
+	}
+
+	@media (max-width: 768px) {
+		.lamp-wrapper {
+			opacity: 0;
+			pointer-events: none;
+		}
 	}
 
 	svg {

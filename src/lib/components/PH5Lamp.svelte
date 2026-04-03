@@ -95,11 +95,21 @@
 		position: fixed;
 		top: 0;
 		left: 0;
-		/* Center the cable (at 50% of SVG width) ~15vw from the left edge */
-		transform: translateX(calc(-50% + clamp(170px, 15vw, 240px)));
-		width: clamp(280px, 32vw, 480px);
+		/* Cable sits at ~50% of SVG width, target ~11vw from left edge */
+		transform: translateX(calc(-50% + clamp(110px, 11vw, 180px)));
+		width: clamp(200px, 20vw, 340px);
 		cursor: pointer;
 		z-index: 10;
+		transition: opacity 0.4s ease;
+	}
+
+	/* Only show when viewport is wide enough for the lamp to sit
+	   comfortably in the left gutter without overlapping content */
+	@media (max-width: 1280px) {
+		.lamp-wrapper {
+			opacity: 0;
+			pointer-events: none;
+		}
 	}
 
 	svg {
