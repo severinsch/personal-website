@@ -28,6 +28,7 @@
 </script>
 
 <div
+	id="lamp-ph5"
 	class="lamp-wrapper"
 	class:lit={dark}
 	onclick={toggleTheme}

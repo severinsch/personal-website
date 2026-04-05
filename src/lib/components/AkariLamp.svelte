@@ -28,6 +28,7 @@
 </script>
 
 <div
+	id="lamp-akari"
 	class="lamp-wrapper"
 	class:lit={dark}
 	onclick={toggleTheme}

@@ -2,42 +2,39 @@
 	import { T } from '@threlte/core';
 	import * as THREE from 'three';
 	import {
-		SHELF_W,
-		DATE_COL_W,
-		CONTENT_COL_W,
+		columns,
+		COL_W,
 		DEPTH,
 		PANEL_T,
 		BALL_R,
-		TUBE_R,
-		LEFT_X,
-		DIVIDER_X,
-		RIGHT_X,
-		lineYs,
-		totalHeight,
-		rows
+		TUBE_R
 	} from '$lib/content/cv3d-grid';
 
-	const COL_XS = [LEFT_X, DIVIDER_X, RIGHT_X];
 	const chromeMat = new THREE.MeshStandardMaterial({
 		color: 0xd0d0d0,
 		metalness: 0.9,
 		roughness: 0.15
 	});
+	// Warm cream for interior shelf plates — matches back panel
 	const panelMat = new THREE.MeshStandardMaterial({
-		color: 0xe0e0e0,
-		metalness: 0.3,
-		roughness: 0.5
+		color: 0xf0ebe5,
+		metalness: 0.05,
+		roughness: 0.8
 	});
 
 	const dummy = new THREE.Object3D();
 
-	// ── Front-face chrome balls at every grid intersection ──
-	const ballPositions: [number, number, number][] = [];
-	for (const y of lineYs) {
-		for (const x of COL_XS) {
-			ballPositions.push([x, y, DEPTH]);
+	// ── Balls at grid intersections (deduplicated) ──
+	const ballMap = new Map<string, [number, number, number]>();
+	for (const col of columns) {
+		for (const y of col.lineYs) {
+			for (const x of [col.leftX, col.rightX]) {
+				const key = `${x.toFixed(4)},${y.toFixed(4)}`;
+				if (!ballMap.has(key)) ballMap.set(key, [x, y, DEPTH]);
+			}
 		}
 	}
+	const ballPositions = [...ballMap.values()];
 	const ballGeom = new THREE.SphereGeometry(BALL_R, 16, 16);
 	const ballMesh = new THREE.InstancedMesh(ballGeom, chromeMat, ballPositions.length);
 	ballPositions.forEach(([x, y, z], i) => {
@@ -48,105 +45,159 @@
 	});
 	ballMesh.instanceMatrix.needsUpdate = true;
 
-	// ── Front-face horizontal tubes (unit-length cylinder, scaled per instance) ──
+	// ── Horizontal front-face tubes (one per lineY per column) ──
 	const hTubeGeom = new THREE.CylinderGeometry(TUBE_R, TUBE_R, 1, 8);
 	hTubeGeom.rotateZ(Math.PI / 2);
 
-	interface TubeInstance {
+	interface TubeInst {
 		pos: [number, number, number];
-		scaleLen: number;
+		len: number;
 	}
-	const hTubes: TubeInstance[] = [];
-	const dateMidX = (LEFT_X + DIVIDER_X) / 2;
-	const contentMidX = (DIVIDER_X + RIGHT_X) / 2;
-	const dateLen = DATE_COL_W - 2 * BALL_R;
-	const contentLen = CONTENT_COL_W - 2 * BALL_R;
-	for (const y of lineYs) {
-		hTubes.push({ pos: [dateMidX, y, DEPTH], scaleLen: dateLen });
-		hTubes.push({ pos: [contentMidX, y, DEPTH], scaleLen: contentLen });
+	const hTubes: TubeInst[] = [];
+	for (const col of columns) {
+		const midX = (col.leftX + col.rightX) / 2;
+		const tubeLen = COL_W - 2 * BALL_R;
+		for (const y of col.lineYs) {
+			hTubes.push({ pos: [midX, y, DEPTH], len: tubeLen });
+		}
 	}
 	const hTubeMesh = new THREE.InstancedMesh(hTubeGeom, chromeMat, hTubes.length);
-	hTubes.forEach(({ pos, scaleLen }, i) => {
+	hTubes.forEach(({ pos, len }, i) => {
 		dummy.position.set(...pos);
-		dummy.scale.set(scaleLen, 1, 1);
+		dummy.scale.set(len, 1, 1);
 		dummy.updateMatrix();
 		hTubeMesh.setMatrixAt(i, dummy.matrix);
 	});
 	hTubeMesh.instanceMatrix.needsUpdate = true;
 
-	// ── Front-face vertical tube segments (unit-height cylinder, scaled per instance) ──
+	// ── Vertical front-face tube segments (between consecutive lineYs) ──
 	const vTubeGeom = new THREE.CylinderGeometry(TUBE_R, TUBE_R, 1, 8);
-	const vTubes: TubeInstance[] = [];
-	for (let i = 0; i < rows.length; i++) {
-		const top = lineYs[i];
-		const bottom = lineYs[i + 1];
-		const midY = (top + bottom) / 2;
-		const segH = Math.abs(top - bottom) - 2 * BALL_R;
-		for (const x of COL_XS) {
-			vTubes.push({ pos: [x, midY, DEPTH], scaleLen: segH });
+	const vTubes: TubeInst[] = [];
+	for (const col of columns) {
+		for (let i = 0; i < col.lineYs.length - 1; i++) {
+			const top = col.lineYs[i];
+			const bot = col.lineYs[i + 1];
+			const midY = (top + bot) / 2;
+			const segH = Math.abs(top - bot) - 2 * BALL_R;
+			vTubes.push({ pos: [col.leftX, midY, DEPTH], len: segH });
+			vTubes.push({ pos: [col.rightX, midY, DEPTH], len: segH });
 		}
 	}
 	const vTubeMesh = new THREE.InstancedMesh(vTubeGeom, chromeMat, vTubes.length);
-	vTubes.forEach(({ pos, scaleLen }, i) => {
+	vTubes.forEach(({ pos, len }, i) => {
 		dummy.position.set(...pos);
-		dummy.scale.set(1, scaleLen, 1);
+		dummy.scale.set(1, len, 1);
 		dummy.updateMatrix();
 		vTubeMesh.setMatrixAt(i, dummy.matrix);
 	});
 	vTubeMesh.instanceMatrix.needsUpdate = true;
 
-	// ── Horizontal shelf plates (InstancedMesh) ──
-	const shelfPlateGeom = new THREE.BoxGeometry(SHELF_W - 2 * PANEL_T, PANEL_T, DEPTH);
-	const shelfPlateMesh = new THREE.InstancedMesh(shelfPlateGeom, panelMat, lineYs.length);
-	lineYs.forEach((y, i) => {
-		dummy.position.set(0, y, DEPTH / 2);
-		dummy.scale.set(1, 1, 1);
-		dummy.updateMatrix();
-		shelfPlateMesh.setMatrixAt(i, dummy.matrix);
-	});
-	shelfPlateMesh.instanceMatrix.needsUpdate = true;
-
-	// ── Depth tubes at top & bottom corners (6 total) ──
-	const depthTubeLen = DEPTH - 2 * BALL_R;
-	const depthTubePositions: [number, number, number][] = [];
-	for (const x of COL_XS) {
-		depthTubePositions.push([x, 0, DEPTH / 2]);
-		depthTubePositions.push([x, -totalHeight, DEPTH / 2]);
+	// ── Horizontal shelf plates ──
+	// lineYs[0] of each column is the coloured top plate — rendered separately in the template.
+	// The instanced mesh covers lineYs[1..] only (interior + bottom plates).
+	const plateGeom = new THREE.BoxGeometry(COL_W - 2 * PANEL_T, PANEL_T, DEPTH);
+	const interiorPlateCount = hTubes.length - columns.length;
+	const plateMesh = new THREE.InstancedMesh(plateGeom, panelMat, interiorPlateCount);
+	let plateIdx = 0;
+	for (const col of columns) {
+		const midX = (col.leftX + col.rightX) / 2;
+		for (const y of col.lineYs.slice(1)) {
+			dummy.position.set(midX, y, DEPTH / 2);
+			dummy.scale.set(1, 1, 1);
+			dummy.updateMatrix();
+			plateMesh.setMatrixAt(plateIdx++, dummy.matrix);
+		}
 	}
+	plateMesh.instanceMatrix.needsUpdate = true;
+
+	// ── Top plate per column — two-tone: coloured +y face, cream −y face ──
+	// BoxGeometry face material index order: +x, -x, +y (top), -y (bottom), +z, -z
+	const topPlateGeom = new THREE.BoxGeometry(COL_W - 2 * PANEL_T, PANEL_T, DEPTH);
+	const topPlateMeshes = columns.map((col) => {
+		const topMat = new THREE.MeshStandardMaterial({
+			color: new THREE.Color(col.topColor),
+			roughness: 0.35,
+			metalness: 0.1
+		});
+		// +y (top) = section colour, everything else = cream panel
+		const mats = [panelMat, panelMat, topMat, panelMat, panelMat, panelMat];
+		const mesh = new THREE.Mesh(topPlateGeom, mats);
+		mesh.position.set((col.leftX + col.rightX) / 2, col.lineYs[0], DEPTH / 2);
+		return mesh;
+	});
+
+	// ── Depth tubes at column corners (deduplicated) ──
+	// Use actual lineYs[0] / lineYs[last] so bottom-aligned columns are correct.
+	const depthTubeLen = DEPTH - 2 * BALL_R;
+	const depthTubeMap = new Map<string, { x: number; y: number }>();
+	for (const col of columns) {
+		const colTop = col.lineYs[0];
+		const colBottom = col.lineYs[col.lineYs.length - 1];
+		for (const x of [col.leftX, col.rightX]) {
+			for (const y of [colTop, colBottom]) {
+				const key = `${x.toFixed(4)},${y.toFixed(4)}`;
+				if (!depthTubeMap.has(key)) depthTubeMap.set(key, { x, y });
+			}
+		}
+	}
+	const depthTubes = [...depthTubeMap.values()];
 </script>
 
 <!-- Instanced geometry -->
 <T is={ballMesh} />
 <T is={hTubeMesh} />
 <T is={vTubeMesh} />
-<T is={shelfPlateMesh} />
+<T is={plateMesh} />
 
-<!-- Structural panels -->
-<!-- Left side -->
-<T.Mesh position={[LEFT_X, -totalHeight / 2, DEPTH / 2]}>
-	<T.BoxGeometry args={[PANEL_T, totalHeight, DEPTH]} />
-	<T.MeshStandardMaterial color="#e0e0e0" metalness={0.3} roughness={0.5} />
-</T.Mesh>
-<!-- Right side -->
-<T.Mesh position={[RIGHT_X, -totalHeight / 2, DEPTH / 2]}>
-	<T.BoxGeometry args={[PANEL_T, totalHeight, DEPTH]} />
-	<T.MeshStandardMaterial color="#e0e0e0" metalness={0.3} roughness={0.5} />
-</T.Mesh>
-<!-- Divider between date & content columns -->
-<T.Mesh position={[DIVIDER_X, -totalHeight / 2, DEPTH / 2]}>
-	<T.BoxGeometry args={[PANEL_T, totalHeight, DEPTH]} />
-	<T.MeshStandardMaterial color="#e0e0e0" metalness={0.3} roughness={0.5} />
-</T.Mesh>
-<!-- Back panel -->
-<T.Mesh position={[0, -totalHeight / 2, PANEL_T / 2]}>
-	<T.BoxGeometry args={[SHELF_W, totalHeight, PANEL_T]} />
-	<T.MeshStandardMaterial color="#f0ebe5" roughness={0.9} metalness={0} />
-</T.Mesh>
+<!-- Per-column back panels and side panels -->
+{#each columns as col}
+	{@const midX = (col.leftX + col.rightX) / 2}
+	{@const colTop = col.lineYs[0]}
+	{@const colBottom = col.lineYs[col.lineYs.length - 1]}
+	{@const colH = colTop - colBottom}
+	{@const colMidY = (colTop + colBottom) / 2}
+	<!-- Back panel -->
+	<T.Mesh position={[midX, colMidY, PANEL_T / 2]}>
+		<T.BoxGeometry args={[COL_W, colH, PANEL_T]} />
+		<T.MeshStandardMaterial color="#f0ebe5" roughness={0.9} metalness={0} />
+	</T.Mesh>
+	<!-- Left outer panel (only for first column) -->
+	{#if col.colIndex === 0}
+		<T.Mesh position={[col.leftX, colMidY, DEPTH / 2]}>
+			<T.BoxGeometry args={[PANEL_T, colH, DEPTH]} />
+			<T.MeshStandardMaterial color="#e0e0e0" metalness={0.3} roughness={0.5} />
+		</T.Mesh>
+	{/if}
+	<!-- Right outer panel (only for last column) -->
+	{#if col.colIndex === columns.length - 1}
+		<T.Mesh position={[col.rightX, colMidY, DEPTH / 2]}>
+			<T.BoxGeometry args={[PANEL_T, colH, DEPTH]} />
+			<T.MeshStandardMaterial color="#e0e0e0" metalness={0.3} roughness={0.5} />
+		</T.Mesh>
+	{/if}
+{/each}
 
-<!-- Depth tubes connecting front to back at top & bottom corners -->
-{#each depthTubePositions as pos}
-	<T.Mesh position={pos} rotation.x={Math.PI / 2}>
+<!-- Depth tubes at column corners -->
+{#each depthTubes as dt}
+	<T.Mesh position={[dt.x, dt.y, DEPTH / 2]} rotation.x={Math.PI / 2}>
 		<T.CylinderGeometry args={[TUBE_R, TUBE_R, depthTubeLen, 8]} />
 		<T.MeshStandardMaterial color="#d0d0d0" metalness={0.9} roughness={0.15} />
 	</T.Mesh>
+{/each}
+
+<!-- Two-tone top plates: coloured from above, cream underneath (matches header interior) -->
+{#each topPlateMeshes as mesh}
+	<T is={mesh} />
+{/each}
+
+<!-- Balls at back-face corners (one per column corner, for depth) -->
+{#each columns as col}
+	{#each [col.leftX, col.rightX] as x}
+		{#each [col.lineYs[0], col.lineYs[col.lineYs.length - 1]] as y}
+			<T.Mesh position={[x, y, 0]}>
+				<T.SphereGeometry args={[BALL_R, 16, 16]} />
+				<T.MeshStandardMaterial color="#d0d0d0" metalness={0.9} roughness={0.15} />
+			</T.Mesh>
+		{/each}
+	{/each}
 {/each}

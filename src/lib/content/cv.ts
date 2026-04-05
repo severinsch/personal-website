@@ -63,23 +63,14 @@ export const experience: Experience[] = [
 		]
 	},
 	{
-		title: 'Organizer (Übungsleitung)',
+		title: 'Organizer (Übungsleitung) & Student Tutor',
 		company: 'Technical University of Munich',
-		period: 'Sep. 2021 – May 2022',
+		period: 'Nov. 2020 – May 2022',
 		location: 'Garching',
 		bullets: [
-			'Co-managing the course "Functional Programming and Verification"',
-			'Creating exercises and implementing tests using OCaml',
-			'Organizing tutorials accompanying the lecture, designing and grading exam questions'
-		]
-	},
-	{
-		title: 'Student Tutor',
-		company: 'Technical University of Munich',
-		period: 'Nov. 2020 – Aug. 2021',
-		location: 'Garching',
-		bullets: [
-			'Tutor for "Fundamentals of Programming" and "Introduction to Computer Networking and Distributed Systems"',
+			'Co-managing the course "Functional Programming and Verification":',
+			'Creating exercises and tests in OCaml. Organizing tutorials. Designing and grading exam.',
+			'Tutor for "Fundamentals of Programming" and "Introduction to Computer Networking and Distributed Systems":',
 			'Teaching students the basics of first Java programming and later networking and distributed systems'
 		]
 	}
