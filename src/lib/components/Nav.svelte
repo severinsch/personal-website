@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { browser } from '$app/environment';
+	import { theme } from '$lib/theme.svelte';
 
 	const links = [
 		{ href: '/', label: 'Home' },
@@ -10,30 +10,6 @@
 	];
 
 	let menuOpen = $state(false);
-	let dark = $state(false);
-
-	$effect(() => {
-		if (!browser) return;
-
-		dark = document.documentElement.classList.contains('dark');
-
-		const observer = new MutationObserver(() => {
-			dark = document.documentElement.classList.contains('dark');
-		});
-
-		observer.observe(document.documentElement, {
-			attributes: true,
-			attributeFilter: ['class']
-		});
-
-		return () => observer.disconnect();
-	});
-
-	function toggleTheme() {
-		dark = !dark;
-		document.documentElement.classList.toggle('dark', dark);
-		localStorage.setItem('theme', dark ? 'dark' : 'light');
-	}
 </script>
 
 <nav class="border-b border-walnut/10 bg-cream/80 backdrop-blur-sm">
@@ -66,12 +42,12 @@
 
 			<!-- Dark mode toggle -->
 			<button
-				onclick={toggleTheme}
+				onclick={theme.toggle}
 				class="rounded-full p-2 text-walnut/70 transition-colors duration-200 hover:text-mustard"
-				aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+				aria-label={theme.isDark ? 'Switch to light mode' : 'Switch to dark mode'}
 			>
 				<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-					{#if dark}
+					{#if theme.isDark}
 						<circle cx="12" cy="12" r="5" />
 						<path
 							stroke-linecap="round"

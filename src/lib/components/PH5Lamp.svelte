@@ -1,41 +1,16 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
-
-	let dark = $state(false);
-
-	$effect(() => {
-		if (!browser) return;
-
-		dark = document.documentElement.classList.contains('dark');
-
-		const observer = new MutationObserver(() => {
-			dark = document.documentElement.classList.contains('dark');
-		});
-
-		observer.observe(document.documentElement, {
-			attributes: true,
-			attributeFilter: ['class']
-		});
-
-		return () => observer.disconnect();
-	});
-
-	function toggleTheme() {
-		dark = !dark;
-		document.documentElement.classList.toggle('dark', dark);
-		localStorage.setItem('theme', dark ? 'dark' : 'light');
-	}
+	import { theme } from '$lib/theme.svelte';
 </script>
 
 <div
 	id="lamp-ph5"
 	class="lamp-wrapper"
-	class:lit={dark}
-	onclick={toggleTheme}
-	onkeydown={(e) => e.key === 'Enter' && toggleTheme()}
+	class:lit={theme.isDark}
+	onclick={theme.toggle}
+	onkeydown={(e) => e.key === 'Enter' && theme.toggle()}
 	role="button"
 	tabindex="0"
-	aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+	aria-label={theme.isDark ? 'Switch to light mode' : 'Switch to dark mode'}
 >
 	<svg viewBox="0 -280 972 878" fill="none" xmlns="http://www.w3.org/2000/svg">
 		<!-- cable: drawn first so it sits behind the lamp body glow group -->

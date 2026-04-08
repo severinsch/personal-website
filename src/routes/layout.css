@@ -12,7 +12,7 @@
 	--color-clay: #a08c7b;
 
 	--font-heading: 'Plus Jakarta Sans', sans-serif;
-	--font-body: 'Inter', sans-serif;
+	--font-body: 'Satoshi', sans-serif;
 	--font-mono: 'JetBrains Mono', monospace;
 }
 
@@ -152,6 +152,11 @@ body::after {
 
 main {
 	animation: fadeUp 0.35s ease-out both;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation-duration: 0.25s;
 }
 
 /* Dark mode — override Tailwind v4 color tokens */
