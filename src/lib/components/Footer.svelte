@@ -1,3 +1,17 @@
+<script lang="ts">
+	import { onMount } from 'svelte'
+
+	// build email link on mount to avoid email being scraped
+	onMount(() => {
+		const link = document.getElementById('email-link') as HTMLAnchorElement | null
+		if (link) {
+			const u = 'severin.schmidmeier'
+			const d = 'tum.de'
+			link.href = `mailto:${u}@${d}`
+		}
+	})
+</script>
+
 <footer class="mt-auto border-t border-walnut/10 bg-cream">
 	<div class="mx-auto max-w-4xl px-6 py-8">
 		<!-- Starburst divider -->
@@ -41,7 +55,8 @@
 					</svg>
 				</a>
 				<a
-					href="mailto:severin.schmidmeier@tum.de"
+					id="email-link"
+					href="#email"
 					class="text-clay transition-colors duration-200 hover:text-mustard"
 					aria-label="Email"
 				>
