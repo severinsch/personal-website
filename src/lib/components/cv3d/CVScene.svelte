@@ -15,7 +15,7 @@
 
 	$effect(() => {
 		if (!camera) return;
-		camera.position.set(-2, 1, DEPTH + 10);
+		camera.position.set(-2, CENTER_Y + 4, DEPTH + 9.6);
 		camera.lookAt(0, CENTER_Y, 0);
 	});
 </script>

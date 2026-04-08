@@ -15,11 +15,23 @@
 		metalness: 0.9,
 		roughness: 0.15
 	});
-	// Warm cream for interior shelf plates — matches back panel
+	// Horizontal shelf plates (top/bottom of compartments) — lightest, receives most light
 	const panelMat = new THREE.MeshStandardMaterial({
 		color: 0xf0ebe5,
 		metalness: 0.05,
 		roughness: 0.8
+	});
+	// Side wall panels — mid tone
+	const sideMat = new THREE.MeshStandardMaterial({
+		color: 0xd6d0c9,
+		metalness: 0.05,
+		roughness: 0.82
+	});
+	// Back panels — most recessed, darkest
+	const backMat = new THREE.MeshStandardMaterial({
+		color: 0xc5bfb8,
+		metalness: 0.02,
+		roughness: 0.9
 	});
 
 	const dummy = new THREE.Object3D();
@@ -126,6 +138,29 @@
 		return mesh;
 	});
 
+	// ── Side walls — one panel per unique x boundary, full column height ──
+	const sideWallMap = new Map<number, { top: number; bottom: number }>();
+	for (const col of columns) {
+		for (const x of [col.leftX, col.rightX]) {
+			const top = col.lineYs[0];
+			const bottom = col.lineYs[col.lineYs.length - 1];
+			const existing = sideWallMap.get(x);
+			if (!existing) {
+				sideWallMap.set(x, { top, bottom });
+			} else {
+				sideWallMap.set(x, {
+					top: Math.max(existing.top, top),
+					bottom: Math.min(existing.bottom, bottom)
+				});
+			}
+		}
+	}
+	const sideWalls = [...sideWallMap.entries()].map(([x, { top, bottom }]) => ({
+		x,
+		h: top - bottom,
+		midY: (top + bottom) / 2
+	}));
+
 	// ── Depth tubes at column corners (deduplicated) ──
 	// Use actual lineYs[0] / lineYs[last] so bottom-aligned columns are correct.
 	const depthTubeLen = DEPTH - 2 * BALL_R;
@@ -149,32 +184,26 @@
 <T is={vTubeMesh} />
 <T is={plateMesh} />
 
-<!-- Per-column back panels and side panels -->
+<!-- Per-column back panels -->
 {#each columns as col}
 	{@const midX = (col.leftX + col.rightX) / 2}
 	{@const colTop = col.lineYs[0]}
 	{@const colBottom = col.lineYs[col.lineYs.length - 1]}
 	{@const colH = colTop - colBottom}
 	{@const colMidY = (colTop + colBottom) / 2}
-	<!-- Back panel -->
+	<!-- Back panel — darkest, most recessed -->
 	<T.Mesh position={[midX, colMidY, PANEL_T / 2]}>
 		<T.BoxGeometry args={[COL_W, colH, PANEL_T]} />
-		<T.MeshStandardMaterial color="#f0ebe5" roughness={0.9} metalness={0} />
+		<T is={backMat} />
 	</T.Mesh>
-	<!-- Left outer panel (only for first column) -->
-	{#if col.colIndex === 0}
-		<T.Mesh position={[col.leftX, colMidY, DEPTH / 2]}>
-			<T.BoxGeometry args={[PANEL_T, colH, DEPTH]} />
-			<T.MeshStandardMaterial color="#e0e0e0" metalness={0.3} roughness={0.5} />
-		</T.Mesh>
-	{/if}
-	<!-- Right outer panel (only for last column) -->
-	{#if col.colIndex === columns.length - 1}
-		<T.Mesh position={[col.rightX, colMidY, DEPTH / 2]}>
-			<T.BoxGeometry args={[PANEL_T, colH, DEPTH]} />
-			<T.MeshStandardMaterial color="#e0e0e0" metalness={0.3} roughness={0.5} />
-		</T.Mesh>
-	{/if}
+{/each}
+
+<!-- Side walls — one panel per unique x boundary -->
+{#each sideWalls as sw}
+	<T.Mesh position={[sw.x, sw.midY, DEPTH / 2]}>
+		<T.BoxGeometry args={[PANEL_T, sw.h, DEPTH]} />
+		<T is={sideMat} />
+	</T.Mesh>
 {/each}
 
 <!-- Depth tubes at column corners -->
