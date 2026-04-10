@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-static';
+import adapter from 'svelte-adapter-bun';
 import { mdsvex } from 'mdsvex';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';

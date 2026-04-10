@@ -56,7 +56,7 @@
 				</a>
 				<a
 					id="email-link"
-					href="#email"
+					href="/"
 					class="text-clay transition-colors duration-200 hover:text-mustard"
 					aria-label="Email"
 				>
