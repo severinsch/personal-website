@@ -27,7 +27,10 @@ export const experience: Experience[] = [
 		company: 'revel8 GmbH',
 		period: 'Apr. 2026 – Present',
 		location: 'Munich',
-		bullets: []
+		bullets: [
+			'Developed a learning platform for companies to train their employees on IT security topics',
+			'Used & benchmarked LLMs to assist companies in creating high quality learning content'
+		]
 	},
 	{
 		title: 'Junior Software Engineer',

@@ -1,8 +1,11 @@
 <script lang="ts">
 	import ProjectCard from '$lib/components/ProjectCard.svelte';
 	import { projects } from '$lib/content/projects';
-
-	const featured = projects.slice(0, 3);
+	import type { Project } from '$lib/types';
+	const featuredIds = ['material-management', 'dpsg-letter', 'hacking-challenges'];
+	const featured = featuredIds
+		.map((id) => projects.find((p) => p.id === id))
+		.filter((p): p is Project => !!p);
 </script>
 
 <svelte:head>
