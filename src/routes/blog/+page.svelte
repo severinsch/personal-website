@@ -7,6 +7,7 @@
 <svelte:head>
 	<title>Blog — Severin Schmidmeier</title>
 	<meta name="description" content="Blog posts by Severin Schmidmeier." />
+	<link rel="canonical" href="https://schmidmeier.dev/blog" />
 </svelte:head>
 
 <h1 class="mb-12 text-3xl font-bold">Blog</h1>

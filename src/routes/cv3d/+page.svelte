@@ -6,6 +6,7 @@
 <svelte:head>
 	<title>3D CV — Severin Schmidmeier</title>
 	<meta name="description" content="Interactive 3D CV of Severin Schmidmeier — USM Haller shelf." />
+	<link rel="canonical" href="https://schmidmeier.dev/cv3d" />
 	<!-- Hide decorative lamps on this full-screen 3D page -->
 	<style>
 		#lamp-akari,

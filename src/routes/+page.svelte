@@ -14,6 +14,32 @@
 		name="description"
 		content="Personal website of Severin Schmidmeier — software engineer and CS master's student at TUM."
 	/>
+	<link rel="canonical" href="https://schmidmeier.dev/" />
+	<meta property="og:type" content="profile" />
+	<meta property="og:title" content="Severin Schmidmeier" />
+	<meta
+		property="og:description"
+		content="Personal website of Severin Schmidmeier — software engineer and CS master's student at TUM."
+	/>
+	<meta property="og:url" content="https://schmidmeier.dev/" />
+	<script type="application/ld+json">
+		{
+			"@context": "https://schema.org",
+			"@type": "Person",
+			"@id": "https://schmidmeier.dev/#person",
+			"name": "Severin Schmidmeier",
+			"url": "https://schmidmeier.dev/",
+			"jobTitle": "Software Engineer",
+			"alumniOf": {
+				"@type": "CollegeOrUniversity",
+				"name": "Technical University of Munich"
+			},
+			"sameAs": [
+				"https://github.com/severinsch",
+				"https://www.linkedin.com/in/severinschmidmeier"
+			]
+		}
+	</script>
 </svelte:head>
 
 <!-- Hero -->

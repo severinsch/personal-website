@@ -31,7 +31,7 @@
 				<a
 					href="https://github.com/severinsch"
 					target="_blank"
-					rel="noopener noreferrer"
+					rel="me noopener noreferrer"
 					class="text-clay transition-colors duration-200 hover:text-mustard"
 					aria-label="GitHub"
 				>
@@ -44,7 +44,7 @@
 				<a
 					href="https://linkedin.com/in/severinschmidmeier"
 					target="_blank"
-					rel="noopener noreferrer"
+					rel="me noopener noreferrer"
 					class="text-clay transition-colors duration-200 hover:text-mustard"
 					aria-label="LinkedIn"
 				>

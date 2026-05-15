@@ -9,6 +9,7 @@
 		name="description"
 		content="CV of Severin Schmidmeier — education, experience, and skills."
 	/>
+	<link rel="canonical" href="https://schmidmeier.dev/cv" />
 </svelte:head>
 
 <div class="mb-10 flex items-end justify-between gap-4">

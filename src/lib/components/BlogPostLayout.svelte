@@ -1,10 +1,13 @@
 <script lang="ts">
+	import { page } from '$app/state';
+
 	let { title, date, description, children } = $props();
 </script>
 
 <svelte:head>
 	<title>{title} — Severin Schmidmeier</title>
 	<meta name="description" content={description} />
+	<link rel="canonical" href={`https://schmidmeier.dev${page.url.pathname}`} />
 </svelte:head>
 
 <article class="mx-auto max-w-2xl">

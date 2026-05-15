@@ -7,6 +7,7 @@
 <svelte:head>
 	<title>Projects — Severin Schmidmeier</title>
 	<meta name="description" content="Projects by Severin Schmidmeier." />
+	<link rel="canonical" href="https://schmidmeier.dev/projects" />
 </svelte:head>
 
 <h1 class="mb-3 text-3xl font-bold">Projects</h1>
