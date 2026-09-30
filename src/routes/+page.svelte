@@ -2,7 +2,7 @@
 	import ProjectCard from '$lib/components/ProjectCard.svelte';
 	import { projects } from '$lib/content/projects';
 	import type { Project } from '$lib/types';
-	const featuredIds = ['material-management', 'dpsg-letter', 'hacking-challenges'];
+	const featuredIds = ['material-management', 'dpsg-letter', 'quicsml'];
 	const featured = featuredIds
 		.map((id) => projects.find((p) => p.id === id))
 		.filter((p): p is Project => !!p);

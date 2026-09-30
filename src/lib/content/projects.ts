@@ -2,6 +2,19 @@ import type { Project } from '$lib/types';
 
 export const projects: Project[] = [
 	{
+		id: 'quicsml',
+		title: 'quicSML',
+		description:
+			'An active state-machine learning framework for modeling QUIC clients and finding protocol implementation flaws.',
+		tech: ['Java', 'Python', 'QUIC', 'LearnLib', 'TLS-Attacker'],
+		year: 2026,
+		bullets: [
+			'Built a QUIC server and learning harness that systematically drives five open-source clients through handshake, transport, post-handshake, and resumption behavior',
+			'Designed response attribution, liveness checks, deterministic voting, and consistency audits to separate client behavior from timing and harness artifacts',
+			'Learned 67 validated models, confirmed 13 RFC violations plus further deviations, and achieved an 8.51× parallel-learning speedup without changing the resulting models'
+		]
+	},
+	{
 		id: 'material-management',
 		title: 'Material Management Tool',
 		description:
