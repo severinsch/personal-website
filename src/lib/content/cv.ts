@@ -23,9 +23,16 @@ export const education: Education[] = [
 
 export const experience: Experience[] = [
 	{
+		title: 'Software Development Engineer Intern',
+		company: 'Amazon',
+		period: 'Oct. 2026 – Mar. 2027',
+		location: 'Luxembourg',
+		bullets: []
+	},
+	{
 		title: 'Working Student Software Engineering',
 		company: 'revel8 GmbH',
-		period: 'Apr. 2026 – Present',
+		period: 'Apr. 2026 – Sep. 2026',
 		location: 'Munich',
 		bullets: [
 			'Developed a learning platform for companies to train their employees on IT security topics',

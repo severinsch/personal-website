@@ -140,8 +140,10 @@
 		<li class="flex items-start gap-3 text-sm text-walnut/80">
 			<span class="mt-1.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-mustard/60"></span>
 			<span
-				>Working as a software engineering working student at
-				<span class="font-medium text-walnut">revel8 GmbH</span> in Munich</span
+				>Working as a <span class="font-medium text-walnut"
+					>Software Development Engineer Intern at Amazon</span
+				>
+				in Luxembourg</span
 			>
 		</li>
 		<li class="flex items-start gap-3 text-sm text-walnut/80">
