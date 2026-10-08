@@ -2,190 +2,120 @@
 	import { T } from '@threlte/core';
 	import { Text } from '@threlte/extras';
 	import { Spring } from 'svelte/motion';
-	import type { ShelfEntry } from '$lib/content/cv3d-grid';
-	import { DEPTH } from '$lib/content/cv3d-grid';
+	import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+	import { DOOR_GAP, DOOR_T, sections, type Slot } from '$lib/content/cv3d-grid';
+	import { chromeMat, paintMat } from './materials';
+	import { cv, input } from './state.svelte';
 
-	let {
-		entry,
-		centerY,
-		height,
-		leftX,
-		rightX
-	}: {
-		entry: ShelfEntry;
-		centerY: number;
-		height: number;
-		leftX: number;
-		rightX: number;
-	} = $props();
+	let { slot }: { slot: Slot } = $props();
 
-	const rotX = new Spring(0, { stiffness: 0.08, damping: 0.6 });
-	const textOpacity = new Spring(0, { stiffness: 0.05, damping: 0.8 });
+	const item = $derived(slot.item);
+	const open = $derived(cv.focused === item.id);
+	const hovered = $derived(cv.hovered === item.id);
+	const lit = $derived(hovered || cv.section === item.section);
 
-	let open = $state(false);
+	const dw = $derived(slot.w - 2 * DOOR_GAP);
+	const dh = $derived(slot.h - 2 * DOOR_GAP);
+	const geom = $derived(new RoundedBoxGeometry(dw, dh, DOOR_T, 3, 0.0025));
 
+	const mat = paintMat('#ffffff');
 	$effect(() => {
-		rotX.set(open ? Math.PI / 2 : 0);
-		textOpacity.set(open ? 1 : 0);
+		mat.color.set(sections[item.section].color);
+	});
+	$effect(() => {
+		mat.emissive.set(lit && !open ? '#ffffff' : '#000000');
+		mat.emissiveIntensity = item.section === 'experience' ? 0.03 : 0.07;
 	});
 
-	const doorCenterX = $derived((leftX + rightX) / 2);
-	const doorW = $derived(rightX - leftX - 0.1);
-	const doorH = $derived(height - 0.08);
-	const hingeY = $derived(centerY - height / 2 + 0.04);
+	// Drop-down flap: hinged at the bottom edge, opens towards the viewer and stops horizontal
+	const rot = new Spring(0, { stiffness: 0.09, damping: 0.42 });
+	const pop = new Spring(0, { stiffness: 0.2, damping: 0.7 });
+	$effect(() => {
+		rot.target = open ? Math.PI / 2 : 0;
+	});
+	$effect(() => {
+		pop.target = lit && !open ? 0.008 : 0;
+	});
 
-	// Content layout — text lives at z = DEPTH - 0.05, just behind the closed door's back face
-	const PAD_H = 0.18;
-	const PAD_V = 0.14;
-	const FONT_TITLE = 0.17;
-	const FONT_SUB = 0.13;
-	const FONT_BULLET = 0.12;
-	const LINE_TITLE = 0.26;
-	const LINE_SUB = 0.19;
-
-	const contentLeft = $derived(leftX + PAD_H);
-	const contentW = $derived(rightX - leftX - PAD_H * 2);
-	const contentZ = DEPTH - 0.05;
-
-	const contentTop = $derived(centerY + doorH / 2 - PAD_V);
-
-	const subtitleText = $derived(
-		entry.subtitle && entry.location
-			? `${entry.subtitle}  ·  ${entry.location}`
-			: (entry.subtitle ?? entry.location ?? '')
+	const ink = $derived(sections[item.section].ink);
+	const pad = 0.028;
+	const big = $derived(slot.w > 0.6 ? 0.032 : 0.026);
+	const font = '/fonts/PlusJakartaSans-Bold.ttf';
+	const fontBody = '/fonts/Inter_18pt-Medium.ttf';
+	const num = $derived(
+		`${sections[item.section].label.toUpperCase()}  ${String(item.index).padStart(2, '0')}`
 	);
-
-	// Y positions for each text element
-	const periodY = $derived(contentTop - LINE_TITLE);
-	const subtitleY = $derived(periodY - (entry.period ? LINE_SUB : 0));
-	const bulletsStartY = $derived(subtitleY - (subtitleText ? LINE_SUB + 0.08 : 0.05));
-
-	// Bullet block with colour ranges
-	const bulletsText = $derived(entry.bullets.map((b) => `• ${b}`).join('\n'));
-
-	const bulletsColorRanges = $derived.by(() => {
-		const ranges: Record<number, string> = {};
-		let idx = 0;
-		for (let i = 0; i < entry.bullets.length; i++) {
-			ranges[idx] = entry.color; // "•"
-			ranges[idx + 2] = '#1a0f0f'; // bullet text
-			idx += 2 + entry.bullets[i].length;
-			if (i < entry.bullets.length - 1) idx += 1; // '\n'
-		}
-		return ranges;
-	});
 </script>
 
-<!-- Door hinge group — bottom-edge pivot, rotates around X axis (drops forward) -->
-<T.Group position={[doorCenterX, hingeY, DEPTH + 0.02]} rotation.x={rotX.current}>
-	<!-- Door panel -->
+<T.Group
+	position={[slot.x, slot.y - slot.h / 2 + DOOR_GAP, 0.003 + pop.current]}
+	rotation.x={rot.current}
+>
 	<T.Mesh
-		position={[0, doorH / 2, 0]}
+		geometry={geom}
+		material={mat}
+		position={[0, dh / 2, -DOOR_T / 2]}
+		castShadow
+		receiveShadow
 		onclick={(e: { stopPropagation: () => void }) => {
 			e.stopPropagation();
-			open = !open;
+			if (input.wasDrag) return;
+			input.doorClicked = true;
+			cv.focused = open ? null : item.id;
 		}}
-		onpointerenter={() => (document.body.style.cursor = 'pointer')}
-		onpointerleave={() => (document.body.style.cursor = 'auto')}
-	>
-		<T.BoxGeometry args={[doorW, doorH, 0.04]} />
-		<T.MeshStandardMaterial color={entry.color} roughness={0.3} metalness={0.1} />
-	</T.Mesh>
+		onpointerenter={() => {
+			cv.hovered = item.id;
+			document.body.style.cursor = 'pointer';
+		}}
+		onpointerleave={() => {
+			if (cv.hovered === item.id) cv.hovered = null;
+			document.body.style.cursor = '';
+		}}
+	/>
 
-	<!-- Flat disk knob with knurled edge — near top of door -->
-	<T.Group position={[0, doorH * 0.82, 0.035]} rotation.x={Math.PI / 2}>
-		<T.Mesh>
-			<T.CylinderGeometry args={[0.055, 0.055, 0.012, 32]} />
-			<T.MeshStandardMaterial color="#d0d0d0" metalness={0.9} roughness={0.15} />
+	<!-- Cylinder lock, top centre -->
+	<T.Group position={[0, dh - 0.03, 0.002]} rotation.x={Math.PI / 2}>
+		<T.Mesh material={chromeMat} castShadow>
+			<T.CylinderGeometry args={[0.0085, 0.0095, 0.006, 32]} />
 		</T.Mesh>
-		<T.Mesh>
-			<T.TorusGeometry args={[0.055, 0.009, 6, 32]} />
-			<T.MeshStandardMaterial color="#b0b0b0" metalness={0.85} roughness={0.45} />
+		<T.Mesh position={[0, 0.0031, 0]}>
+			<T.BoxGeometry args={[0.0018, 0.0004, 0.008]} />
+			<T.MeshBasicMaterial color="#222" />
 		</T.Mesh>
 	</T.Group>
 
-	<!-- Door face label — period if available, otherwise entry title (e.g. Technical Skills) -->
-	{#if entry.period}
-		<Text
-			text={entry.period}
-			font="/fonts/Inter_18pt-Medium.ttf"
-			position={[0, doorH * 0.28, 0.025]}
-			fontSize={0.13}
-			color="rgba(255,255,255,0.88)"
-			anchorX="center"
-			anchorY="middle"
-			maxWidth={doorW - 0.2}
-			textAlign="center"
-		/>
-	{:else if entry.title}
-		<Text
-			text={entry.title}
-			font="/fonts/PlusJakartaSans-Bold.ttf"
-			position={[0, doorH * 0.28, 0.025]}
-			fontSize={0.12}
-			color="rgba(255,255,255,0.88)"
-			anchorX="center"
-			anchorY="middle"
-			maxWidth={doorW - 0.2}
-			textAlign="center"
-		/>
-	{/if}
+	<!-- Print -->
+	<Text
+		text={num}
+		font={fontBody}
+		fontSize={0.0115}
+		letterSpacing={0.12}
+		color={ink}
+		fillOpacity={0.62}
+		anchorX="left"
+		anchorY="top"
+		position={[-dw / 2 + pad, dh - pad, 0.0006]}
+	/>
+	<Text
+		text={item.doorLabel}
+		{font}
+		fontSize={big}
+		letterSpacing={-0.01}
+		color={ink}
+		anchorX="left"
+		anchorY="bottom"
+		maxWidth={dw - 2 * pad}
+		position={[-dw / 2 + pad, pad + 0.022, 0.0006]}
+	/>
+	<Text
+		text={item.doorSub}
+		font={fontBody}
+		fontSize={0.0135}
+		color={ink}
+		fillOpacity={0.78}
+		anchorX="left"
+		anchorY="bottom"
+		maxWidth={dw - 2 * pad}
+		position={[-dw / 2 + pad, pad, 0.0006]}
+	/>
 </T.Group>
-
-<!-- Content text — world-space, depth-tested by door geometry.
-     z = DEPTH - 0.05 puts it just behind the closed door's back face so the door
-     physically occludes it. As the door swings open the text is revealed naturally. -->
-<Text
-	text={entry.title}
-	font="/fonts/PlusJakartaSans-Bold.ttf"
-	position={[contentLeft, contentTop, contentZ]}
-	fontSize={FONT_TITLE}
-	color="#0f0808"
-	anchorX="left"
-	anchorY="top"
-	maxWidth={contentW}
-	fillOpacity={textOpacity.current}
-/>
-
-{#if entry.period}
-	<Text
-		text={entry.period}
-		font="/fonts/Inter_18pt-Medium.ttf"
-		position={[contentLeft, periodY, contentZ]}
-		fontSize={FONT_SUB}
-		color="#8a7060"
-		anchorX="left"
-		anchorY="top"
-		maxWidth={contentW}
-		fillOpacity={textOpacity.current}
-	/>
-{/if}
-
-{#if subtitleText}
-	<Text
-		text={subtitleText}
-		font="/fonts/Inter_18pt-Medium.ttf"
-		position={[contentLeft, subtitleY, contentZ]}
-		fontSize={FONT_SUB}
-		color="#3d2a1a"
-		anchorX="left"
-		anchorY="top"
-		maxWidth={contentW}
-		fillOpacity={textOpacity.current}
-	/>
-{/if}
-
-{#if entry.bullets.length > 0}
-	<Text
-		text={bulletsText}
-		font="/fonts/Inter_18pt-Medium.ttf"
-		position={[contentLeft, bulletsStartY, contentZ]}
-		fontSize={FONT_BULLET}
-		anchorX="left"
-		anchorY="top"
-		maxWidth={contentW}
-		lineHeight={1.4}
-		colorRanges={bulletsColorRanges}
-		fillOpacity={textOpacity.current}
-	/>
-{/if}
