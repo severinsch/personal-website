@@ -2,6 +2,8 @@
 	// Props inside a compartment, revealed when its flap drops
 	import { T, useThrelte } from '@threlte/core';
 	import * as THREE from 'three';
+	import { Spring } from 'svelte/motion';
+	import { cv } from './state.svelte';
 	import { DEPTH, PANEL_T, sections, type Slot } from '$lib/content/cv3d-grid';
 
 	let { slot }: { slot: Slot } = $props();
@@ -10,6 +12,14 @@
 	const floor = $derived(slot.y - slot.h / 2 + PANEL_T / 2);
 	const left = $derived(slot.x - slot.w / 2 + 0.02);
 	const accent = $derived(sections[item.section].ui);
+
+	// Behind a closed flap nothing is visible, so skip drawing it (and its shadows) entirely.
+	// Mirrors the flap's spring so the props stay visible until it has fully closed.
+	const reveal = new Spring(0, { stiffness: 0.09, damping: 0.42 });
+	$effect(() => {
+		reveal.target = cv.focused === item.id ? 1 : 0;
+	});
+	const visible = $derived(reveal.current > 0.002);
 
 	// deterministic pseudo-random per compartment
 	function rng(seed: number) {
@@ -109,7 +119,7 @@
 	const cards = $derived(item.tags ?? []);
 </script>
 
-<T.Group>
+<T.Group {visible}>
 	{#each binders as b}
 		<T.Group position={[b.x, floor, -DEPTH / 2 - 0.02]} rotation.z={b.lean}>
 			<T.Mesh position.y={0.142} castShadow receiveShadow>

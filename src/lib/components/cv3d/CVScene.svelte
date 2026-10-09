@@ -9,7 +9,7 @@
 	import Contents from './Contents.svelte';
 	import Decor from './Decor.svelte';
 	import { DEPTH, type ShelfLayout } from '$lib/content/cv3d-grid';
-	import { cv, input } from './state.svelte';
+	import { cv, input, lowPower, refreshShadows, shadows } from './state.svelte';
 	import { FOV, focusShot, overviewShot, solveShot } from './framing';
 	import { theme } from '$lib/theme.svelte';
 	import { Spring } from 'svelte/motion';
@@ -19,6 +19,34 @@
 	interactivity();
 
 	const { renderer, scene, size, invalidate } = useThrelte();
+
+	// If the GPU resets (mobile drivers do this on overly long frames or memory pressure),
+	// hand over to the page's fallback instead of leaving a dead canvas.
+	$effect(() => {
+		const el = renderer.domElement;
+		const onLost = () => (cv.contextLost = true);
+		el.addEventListener('webglcontextlost', onLost);
+		return () => el.removeEventListener('webglcontextlost', onLost);
+	});
+
+	// Shadow maps are redrawn only while something that casts them is changing, not on every
+	// camera move: doors (focus / hover / legend highlight), the layout and the day/night fade.
+	renderer.shadowMap.autoUpdate = false;
+	$effect(() => {
+		void [cv.focused, cv.hovered, cv.section, layout];
+		refreshShadows();
+		invalidate();
+	});
+	$effect(() => {
+		void theme.isDark;
+		refreshShadows(4000);
+	});
+	useTask(
+		() => {
+			renderer.shadowMap.needsUpdate = performance.now() < shadows.liveUntil;
+		},
+		{ autoInvalidate: false }
+	);
 
 	// Image-based lighting: a neutral studio room for believable chrome
 	const pmrem = new THREE.PMREMGenerator(renderer);
@@ -146,11 +174,10 @@
 	intensity={mix(2.0, 0.45)}
 	color={theme.isDark ? '#b8c4ff' : '#fff6ea'}
 	castShadow
-	shadow.mapSize={[2048, 2048]}
+	shadow.mapSize={lowPower ? [1024, 1024] : [2048, 2048]}
 	shadow.bias={-0.0003}
 	shadow.normalBias={0.015}
-	shadow.radius={6}
-	shadow.blurSamples={16}
+	shadow.radius={lowPower ? 3 : 6}
 />
 <T.DirectionalLight position={[3, 2, 2.5]} intensity={mix(0.35, 0.08)} color="#e8eeff" />
 

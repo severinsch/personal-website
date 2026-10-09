@@ -6,7 +6,7 @@
 	import { Spring } from 'svelte/motion';
 	import { DEPTH, PANEL_T, type ShelfLayout } from '$lib/content/cv3d-grid';
 	import { theme } from '$lib/theme.svelte';
-	import { input } from './state.svelte';
+	import { input, lowPower } from './state.svelte';
 
 	let { layout }: { layout: ShelfLayout } = $props();
 
@@ -182,7 +182,7 @@
 		distance={4}
 		decay={1.4}
 		color="#ffb860"
-		castShadow={theme.isDark}
+		castShadow={theme.isDark && !lowPower}
 		shadow.mapSize={[1024, 1024]}
 		shadow.bias={-0.002}
 		shadow.camera.near={0.02}
