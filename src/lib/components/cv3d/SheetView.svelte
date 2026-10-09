@@ -43,8 +43,30 @@
 	]);
 
 	// The sheet's DOM lives inside threlte's event target, and threlte raycasts from
-	// event.offsetX/Y — which would be relative to the sheet. Keep its events to itself.
-	const stop = (e: Event) => e.stopPropagation();
+	// event.offsetX/Y, which would be relative to whatever element on the sheet was hit, so it
+	// would pick a door near the canvas's top-left corner. Keep the sheet's events to itself.
+	// These must be native listeners: Svelte delegates `onclick` & co. to the app root, where
+	// stopPropagation() comes too late, after threlte's listener has already seen the event.
+	function isolate(el: HTMLElement) {
+		const stop = (e: Event) => e.stopPropagation();
+		// A plain click on the sheet closes the compartment, like a click anywhere else.
+		// Selecting text (to copy it) or following a link doesn't.
+		const onclick = (e: MouseEvent) => {
+			e.stopPropagation();
+			if ((e.target as HTMLElement).closest('a, button')) return;
+			if (window.getSelection()?.toString()) return;
+			cv.focused = null;
+		};
+		const events = ['pointerdown', 'pointerup', 'pointermove', 'dblclick', 'contextmenu', 'wheel'];
+		for (const name of events) el.addEventListener(name, stop);
+		el.addEventListener('click', onclick);
+		return {
+			destroy() {
+				for (const name of events) el.removeEventListener(name, stop);
+				el.removeEventListener('click', onclick);
+			}
+		};
+	}
 	function onpointerenter() {
 		cv.hovered = null;
 		document.body.style.cursor = '';
@@ -58,11 +80,8 @@
 			class="sheet"
 			data-cv-ui
 			bind:clientHeight={h}
+			use:isolate
 			{onpointerenter}
-			onpointermove={stop}
-			onpointerdown={stop}
-			onpointerup={stop}
-			onclick={stop}
 			style="width: {cv.sheetPxW}px; opacity: {Math.min(1, k * 1.6)}; transform: scale({0.7 +
 				0.3 * k})"
 		>

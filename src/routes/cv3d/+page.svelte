@@ -10,11 +10,11 @@
 	let W = $state(0);
 	let H = $state(0);
 	let top = $state(64);
-	// null until checked on the client; false when the browser can't give us a WebGL context
-	let webgl = $state<boolean | null>(null);
-	const live = $derived(webgl === true && !cv.contextLost);
+	// The 3D view only runs on the client; after a second lost context we give up and fall back
+	let mounted = $state(false);
+	const live = $derived(mounted && cv.losses < 2);
 	$effect(() => {
-		if (cv.contextLost) cv.focused = null;
+		if (!live) cv.focused = null;
 	});
 
 	const orientation = $derived(W && H && W / H < 1.05 ? 'portrait' : 'landscape');
@@ -22,13 +22,7 @@
 	const focusedItem = $derived(layout.slots.find((s) => s.item.id === cv.focused)?.item);
 
 	onMount(() => {
-		try {
-			const gl = document.createElement('canvas').getContext('webgl2');
-			webgl = !!gl;
-			gl?.getExtension('WEBGL_lose_context')?.loseContext();
-		} catch {
-			webgl = false;
-		}
+		mounted = true;
 		cv.sheetPxW = Math.min(560, window.innerWidth - 40);
 		const measure = () => {
 			top = document.querySelector('nav')?.getBoundingClientRect().bottom ?? 64;
@@ -44,7 +38,7 @@
 			document.body.style.cursor = '';
 			cv.focused = null;
 			cv.hovered = null;
-			cv.contextLost = false;
+			cv.losses = 0;
 		};
 	});
 
@@ -138,19 +132,24 @@
 >
 	<div class="absolute inset-0" class:grabbing={dragging}>
 		{#if live}
-			<svelte:boundary onerror={(e) => console.error(e)}>
-				<Canvas
-					toneMapping={NeutralToneMapping}
-					shadows={PCFShadowMap}
-					dpr={Math.min(lowPower ? 1.5 : 2, globalThis.devicePixelRatio ?? 1)}
-				>
-					<CVScene {layout} />
-				</Canvas>
-				{#snippet failed()}
-					{@render noWebgl()}
-				{/snippet}
-			</svelte:boundary>
-		{:else if webgl !== null}
+			<!-- a lost context gets one retry on a fresh canvas -->
+			{#key cv.losses}
+				<!-- WebGL unavailable (e.g. hardware acceleration off): the renderer throws -->
+				<svelte:boundary onerror={(e) => console.error(e)}>
+					<Canvas
+						toneMapping={NeutralToneMapping}
+						shadows={lowPower ? false : PCFShadowMap}
+						autoRender={cv.compiled}
+						dpr={Math.min(lowPower ? 1.5 : 2, globalThis.devicePixelRatio ?? 1)}
+					>
+						<CVScene {layout} />
+					</Canvas>
+					{#snippet failed()}
+						{@render noWebgl()}
+					{/snippet}
+				</svelte:boundary>
+			{/key}
+		{:else if mounted}
 			{@render noWebgl()}
 		{/if}
 	</div>
@@ -158,10 +157,17 @@
 	{#snippet noWebgl()}
 		<div class="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
 			<p class="max-w-md text-walnut">
-				{cv.contextLost
+				{cv.losses
 					? 'Your device’s graphics driver stopped the 3D shelf.'
 					: 'The 3D shelf needs WebGL, which your browser couldn’t start (hardware acceleration may be turned off).'}
 			</p>
+			{#if cv.losses}
+				<button
+					data-cv-ui
+					class="text-clay transition-colors hover:text-mustard"
+					onclick={() => (cv.losses = 0)}>Try again</button
+				>
+			{/if}
 			<a href="/cv" class="text-clay transition-colors hover:text-mustard"
 				>Read the text version →</a
 			>

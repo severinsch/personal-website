@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { lowPower } from './state.svelte';
 
 export const chromeMat = new THREE.MeshStandardMaterial({
 	color: 0xf2f2f2,
@@ -6,8 +7,10 @@ export const chromeMat = new THREE.MeshStandardMaterial({
 	roughness: 0.14
 });
 
-// Powder-coated steel: a slightly glossy painted surface
+// Powder-coated steel: a slightly glossy painted surface. Phones get the plain standard material:
+// the clearcoat variant is a much bigger shader, and some mobile drivers choke compiling it.
 export function paintMat(color: string) {
+	if (lowPower) return new THREE.MeshStandardMaterial({ color, roughness: 0.42 });
 	return new THREE.MeshPhysicalMaterial({
 		color,
 		metalness: 0,

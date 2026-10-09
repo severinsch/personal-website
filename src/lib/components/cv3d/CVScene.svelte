@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { T, useTask, useThrelte } from '@threlte/core';
+	import { tick } from 'svelte';
 	import { ContactShadows, interactivity } from '@threlte/extras';
 	import * as THREE from 'three';
 	import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
@@ -20,18 +21,27 @@
 
 	const { renderer, scene, size, invalidate } = useThrelte();
 
-	// If the GPU resets (mobile drivers do this on overly long frames or memory pressure),
-	// hand over to the page's fallback instead of leaving a dead canvas.
+	// If the GPU resets (some mobile drivers do this, especially with several live contexts),
+	// tell the page so it can retry with a fresh canvas or fall back to the text version.
+	// On unmount, release the context right away instead of waiting for GC, so a remount or a
+	// return to this page never runs alongside a stale context.
 	$effect(() => {
 		const el = renderer.domElement;
-		const onLost = () => (cv.contextLost = true);
+		const onLost = () => cv.losses++;
 		el.addEventListener('webglcontextlost', onLost);
-		return () => el.removeEventListener('webglcontextlost', onLost);
+		return () => {
+			el.removeEventListener('webglcontextlost', onLost);
+			// after threlte has disposed the scene and the renderer
+			setTimeout(() => {
+				if (!renderer.getContext().isContextLost()) renderer.forceContextLoss();
+			});
+		};
 	});
 
 	// Shadow maps are redrawn only while something that casts them is changing, not on every
 	// camera move: doors (focus / hover / legend highlight), the layout and the day/night fade.
 	renderer.shadowMap.autoUpdate = false;
+
 	$effect(() => {
 		void [cv.focused, cv.hovered, cv.section, layout];
 		refreshShadows();
@@ -70,6 +80,25 @@
 
 	let camera: THREE.PerspectiveCamera | undefined = $state();
 
+	// Compile every shader up front and off the main thread where the browser supports it
+	// (KHR_parallel_shader_compile), instead of in one blocking burst on the first frame.
+	// Some mobile drivers (PowerVR) reset the GPU when that burst is too long.
+	$effect(() => {
+		if (!camera || cv.compiled) return;
+		const cam = camera;
+		let cancelled = false;
+		tick()
+			.then(() => renderer.compileAsync(scene, cam))
+			.catch(() => {}) // the first frame will compile whatever is missing
+			.finally(() => {
+				if (cancelled) return;
+				cv.compiled = true;
+				invalidate();
+			});
+		return () => (cancelled = true);
+	});
+	$effect(() => () => (cv.compiled = false));
+
 	// ── Camera rig: every frame, ease towards the requested shot ──
 	const cur = { cx: 0, cy: 0.6, cz: 0, dist: 6, yaw: -0.3, pitch: 0.15, offX: 0, offY: 0 };
 	let first = true;
@@ -77,7 +106,7 @@
 
 	useTask(
 		(dt) => {
-			if (!camera) return;
+			if (!camera || !cv.compiled) return;
 			const { width: W, height: H } = size.current;
 			if (!W || !H) return;
 
@@ -189,15 +218,18 @@
 <Decor {layout} />
 <SheetView {layout} />
 
-<!-- Invisible floor and wall that only catch shadows, so the shelf sits on the page itself -->
-<T.Mesh rotation.x={-Math.PI / 2} receiveShadow>
-	<T.PlaneGeometry args={[30, 30]} />
-	<T.ShadowMaterial opacity={0.16} color="#2a1a0a" />
-</T.Mesh>
-<T.Mesh position={[0, 0, -DEPTH - 0.06]} receiveShadow>
-	<T.PlaneGeometry args={[30, 30]} />
-	<T.ShadowMaterial opacity={0.07} color="#2a1a0a" />
-</T.Mesh>
+<!-- Invisible floor and wall that only catch shadows, so the shelf sits on the page itself.
+     Phones render without shadow maps; the contact shadow below still grounds the shelf. -->
+{#if !lowPower}
+	<T.Mesh rotation.x={-Math.PI / 2} receiveShadow>
+		<T.PlaneGeometry args={[30, 30]} />
+		<T.ShadowMaterial opacity={0.16} color="#2a1a0a" />
+	</T.Mesh>
+	<T.Mesh position={[0, 0, -DEPTH - 0.06]} receiveShadow>
+		<T.PlaneGeometry args={[30, 30]} />
+		<T.ShadowMaterial opacity={0.07} color="#2a1a0a" />
+	</T.Mesh>
+{/if}
 <ContactShadows
 	position.y={0.0015}
 	width={layout.width + 0.8}

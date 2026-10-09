@@ -6,7 +6,10 @@ export const cv = $state({
 	section: null as SectionId | null, // legend hover highlight
 	sheetPxH: 420, // measured size of the sheet DOM
 	sheetPxW: 560,
-	contextLost: false // the GPU dropped our WebGL context (driver reset, OOM, …)
+	// times the GPU dropped our WebGL context (driver reset, OOM, …); the first one gets a fresh canvas
+	losses: 0,
+	// shaders compiled in the background; the canvas only starts drawing once this is true
+	compiled: false
 });
 
 // Phones and tablets: lower resolution, smaller shadow maps, fewer shadow-casting lights
