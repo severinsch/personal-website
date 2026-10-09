@@ -10,9 +10,16 @@
 	];
 
 	let menuOpen = $state(false);
+	// close the mobile menu whenever the route changes (links, back button, …)
+	$effect(() => {
+		void page.url.pathname;
+		menuOpen = false;
+	});
 </script>
 
-<nav class="border-b border-walnut/10 bg-cream/80 backdrop-blur-sm">
+<svelte:window onkeydown={(e) => e.key === 'Escape' && (menuOpen = false)} />
+
+<nav class="relative z-50 border-b border-walnut/10 bg-cream/80 backdrop-blur-sm">
 	<div class="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
 		<a
 			href="/"
@@ -68,6 +75,7 @@
 				class="text-walnut sm:hidden"
 				onclick={() => (menuOpen = !menuOpen)}
 				aria-label="Toggle menu"
+				aria-expanded={menuOpen}
 			>
 				<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
 					{#if menuOpen}
@@ -80,9 +88,11 @@
 		</div>
 	</div>
 
-	<!-- Mobile menu -->
+	<!-- Mobile menu: an opaque dropdown over the page, so the content doesn't jump -->
 	{#if menuOpen}
-		<ul class="border-t border-walnut/10 px-6 pb-4 sm:hidden">
+		<ul
+			class="absolute inset-x-0 top-full border-b border-walnut/10 bg-cream px-6 pt-2 pb-4 shadow-lg shadow-walnut/5 sm:hidden"
+		>
 			{#each links as link}
 				<li>
 					<a
